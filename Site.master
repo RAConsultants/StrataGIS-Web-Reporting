@@ -1,0 +1,104 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Site.master.cs" Inherits="SiteMaster" %>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head runat="server">
+    <title></title>
+    <link href="~/Styles/Site.css" rel="stylesheet" type="text/css" />
+    <asp:ContentPlaceHolder ID="HeadContent" runat="server">
+    </asp:ContentPlaceHolder>
+    <style type="text/css">
+        @font-face {
+            font-family: Iceland-Regular;
+            src: url('fonts/Iceland-Regular.eot'); /* this will be applied from IE 9 compatibility mode*/
+            src: url('fonts/Iceland-Regular.eot?') format('embedded-opentype'), /* IE prior versions */ url('fonts/Iceland-Regular.woff') format('woff'), /* modern browser that support web open font */ url('fonts/Iceland-Regular.ttf') format('truetype'); /* browsers that support true type */
+        }
+
+        .Title {
+            font-family: Iceland-Regular, Arial;
+            font-size: 50px;
+            color: #636466;
+        }
+
+        .Logo {
+            font-family: Iceland-Regular, Arial;
+            font-size: 60px;
+        }
+
+        .HeaderCaptionClass {
+            background-color: #0093D0;
+            text-align: center;
+            border: solid;
+            border-width: 1px 1px 1px 1px;
+            border-color: #636466;
+            font-weight: 700;
+            padding: 4px;
+        }
+
+        .ItemCssClass {
+            border: solid;
+            border-width: 0 1px 1px 1px;
+            border-color: #636466;
+        }
+
+        .AltItemCssClass {
+            border: solid;
+            border-width: 0 1px 1px 1px;
+            border-color: #636466;
+            background-color: #88DBFF;
+        }
+
+        .RightAlign {
+            text-align: right;
+            border: solid;
+            border-width: 0 1px 1px 1px;
+            border-color: #636466;
+            padding: 4px;
+        }
+
+        .CenterAlign {
+            text-align: center;
+            border: solid;
+            border-width: 0 1px 1px 1px;
+            border-color: #636466;
+            padding: 4px;
+        }
+
+        .LeftAlign {
+            text-align: left;
+            border: solid;
+            border-width: 0 1px 1px 1px;
+            border-color: #636466;
+            padding: 4px;
+        }
+    </style>
+</head>
+<body>
+    <form runat="server">
+        <div class="page">
+            <div class="header">
+                <div align="center">
+                    <font color="#636466" class="Logo">STRATA</font><font
+                        color="#0093D0" class="Logo">GIS</font>
+                    &nbsp;&nbsp;&nbsp;&nbsp; 
+                <font class="Title">Web Reporting</font>
+                    <br />
+                    <hr />
+                </div>
+                <div class="loginDisplay">
+                </div>
+                <div class="clear hideSkiplink">
+                </div>
+            </div>
+            <div class="main">
+                <ig:WebScriptManager ID="WebScriptManager1" runat="server" />
+                <asp:ContentPlaceHolder ID="MainContent" runat="server" />
+            </div>
+            <div class="clear">
+            </div>
+        </div>
+        <div class="footer">
+        </div>
+    </form>
+</body>
+</html>
