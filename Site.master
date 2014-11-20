@@ -71,6 +71,11 @@
             border-color: #636466;
             padding: 4px;
         }
+
+        .FixPadding {
+            padding-left: 30px !important;
+            padding-top: 1px !important;
+        }
     </style>
 </head>
 <body>
