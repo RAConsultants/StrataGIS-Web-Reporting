@@ -36,8 +36,8 @@
                         <td align="left">
                             <asp:DropDownList ID="ddReportType" runat="server">
                                 <asp:ListItem Text="Daily Usage" Value="Daily"></asp:ListItem>
+                                <asp:ListItem Text="Daily Usage (Grouped)" Value="DailyG"></asp:ListItem>
                                 <asp:ListItem Text="Total Usage" Value="Total"></asp:ListItem>
-                                <%--<asp:ListItem Text="Daily Usage (Grouped)" Value="DailyG"></asp:ListItem>--%>
                                 <asp:ListItem Text="Total Usage (Grouped)" Value="TotalG"></asp:ListItem>
                                 <asp:ListItem Text="Geofence Report" Value="EnterExit"></asp:ListItem>
                                 <asp:ListItem Text="Trip Report" Value="Trip"></asp:ListItem>
@@ -575,4 +575,145 @@
             </tr>
         </table>
     </div>
+
+    <table width="100%">
+        <tr align="center">
+            <td align="center">
+                <ig:WebHierarchicalDataGrid ID="hdgDailyG" runat="server" EnableRelativeLayout="True"
+                    ShowFooter="False" HeaderCaptionCssClass="HeaderCaptionClass"
+                    ItemCssClass="ItemCssClass" AltItemCssClass="AltItemCssClass" FooterCaptionCssClass="HeaderCaptionClass"
+                    AutoGenerateColumns="False" AutoGenerateBands="True"
+                    DataMember="Dates" DataKeyFields="ID" InitialDataBindDepth="-1" EnableDataViewState="True"
+                    Width="1100" ExpandableAreaCssClass="FixPadding">
+                    <Columns>
+                        <ig:BoundDataField DataFieldName="ID" Key="ID" Footer-Text="Date" Header-Text="Date"
+                            CssClass="CenterAlign" Width="90">
+                        </ig:BoundDataField>
+                        <ig:BoundDataField DataFieldName="HrsRun" Key="HrsRun" Footer-Text="HrsRun" Header-Text="HrsRun"
+                            CssClass="RightAlign" DataFormatString="{0:F}" Width="60">
+                        </ig:BoundDataField>
+                        <ig:BoundDataField DataFieldName="HrsIdle" Key="HrsIdle" Footer-Text="HrsIdle" Header-Text="HrsIdle"
+                            CssClass="RightAlign" DataFormatString="{0:F}" Width="60">
+                        </ig:BoundDataField>
+                        <ig:BoundDataField DataFieldName="HrsOff" Key="HrsOff" Footer-Text="HrsOff" Header-Text="HrsOff"
+                            CssClass="RightAlign" DataFormatString="{0:F}" Width="60">
+                        </ig:BoundDataField>
+                        <ig:BoundDataField DataFieldName="DIHrs" Key="DIHrs" Footer-Text="DIHrs" Header-Text="DIHrs"
+                            CssClass="RightAlign" DataFormatString="{0:F}" Width="60">
+                        </ig:BoundDataField>
+                        <ig:BoundDataField DataFieldName="Miles" Key="Miles" Footer-Text="Miles" Header-Text="Miles"
+                            CssClass="RightAlign" DataFormatString="{0:F}" Width="60">
+                        </ig:BoundDataField>
+                        <ig:BoundDataField DataFieldName="AvgSpeed" Key="AvgSpeed" Footer-Text="AvgSpeed"
+                            Header-Text="AvgSpeed" CssClass="RightAlign" DataFormatString="{0:F}"
+                            Width="80" Hidden="True">
+                        </ig:BoundDataField>
+                        <ig:BoundDataField DataFieldName="MaxSpeed" Key="MaxSpeed" Footer-Text="MaxSpeed"
+                            Header-Text="MaxSpeed" CssClass="RightAlign" DataFormatString="{0:F}"
+                            Width="80">
+                        </ig:BoundDataField>
+                        <ig:BoundDataField DataFieldName="OnTime" Key="OnTime" Footer-Text="OnTime" Header-Text="OnTime"
+                            CssClass="RightAlign" Width="80">
+                        </ig:BoundDataField>
+                        <ig:BoundDataField DataFieldName="OffTime" Key="OffTime" Footer-Text="OffTime" Header-Text="OffTime"
+                            CssClass="RightAlign" Width="80">
+                        </ig:BoundDataField>
+                    </Columns>
+                    <Bands>
+                        <ig:Band Key="Dpts" AutoGenerateColumns="false" DataMember="Dpts" DataKeyFields="ID"
+                            ExpandableAreaCssClass="FixPadding" Width="1000">
+                            <Columns>
+                                <ig:BoundDataField DataFieldName="Date" Key="Date" Footer-Text="Date" Header-Text="Date"
+                                    CssClass="CenterAlign" Width="30" Hidden="true">
+                                </ig:BoundDataField>
+                                <ig:BoundDataField DataFieldName="ID" Key="ID" Footer-Text="Dpt" Header-Text="Dpt"
+                                    CssClass="CenterAlign" Width="30" Hidden="true">
+                                </ig:BoundDataField>
+                                <ig:BoundDataField DataFieldName="Dpt" Key="Dpt" Footer-Text="Dpt" Header-Text="Dpt"
+                                    CssClass="CenterAlign" Width="30">
+                                </ig:BoundDataField>
+                                <ig:BoundDataField DataFieldName="HrsRun" Key="HrsRun" Footer-Text="HrsRun" Header-Text="HrsRun"
+                                    CssClass="RightAlign" DataFormatString="{0:F}" Width="60">
+                                </ig:BoundDataField>
+                                <ig:BoundDataField DataFieldName="HrsIdle" Key="HrsIdle" Footer-Text="HrsIdle" Header-Text="HrsIdle"
+                                    CssClass="RightAlign" DataFormatString="{0:F}" Width="60">
+                                </ig:BoundDataField>
+                                <ig:BoundDataField DataFieldName="HrsOff" Key="HrsOff" Footer-Text="HrsOff" Header-Text="HrsOff"
+                                    CssClass="RightAlign" DataFormatString="{0:F}" Width="60">
+                                </ig:BoundDataField>
+                                <ig:BoundDataField DataFieldName="DIHrs" Key="DIHrs" Footer-Text="DIHrs" Header-Text="DIHrs"
+                                    CssClass="RightAlign" DataFormatString="{0:F}" Width="60">
+                                </ig:BoundDataField>
+                                <ig:BoundDataField DataFieldName="Miles" Key="Miles" Footer-Text="Miles" Header-Text="Miles"
+                                    CssClass="RightAlign" DataFormatString="{0:F}" Width="60">
+                                </ig:BoundDataField>
+                                <ig:BoundDataField DataFieldName="AvgSpeed" Key="AvgSpeed" Footer-Text="AvgSpeed"
+                                    Header-Text="AvgSpeed" CssClass="RightAlign" DataFormatString="{0:F}"
+                                    Width="80" Hidden="True">
+                                </ig:BoundDataField>
+                                <ig:BoundDataField DataFieldName="MaxSpeed" Key="MaxSpeed" Footer-Text="MaxSpeed"
+                                    Header-Text="MaxSpeed" CssClass="RightAlign" DataFormatString="{0:F}"
+                                    Width="80">
+                                </ig:BoundDataField>
+                                <ig:BoundDataField DataFieldName="OnTime" Key="OnTime" Footer-Text="OnTime" Header-Text="OnTime"
+                                    CssClass="RightAlign" Width="80">
+                                </ig:BoundDataField>
+                                <ig:BoundDataField DataFieldName="OffTime" Key="OffTime" Footer-Text="OffTime" Header-Text="OffTime"
+                                    CssClass="RightAlign" Width="80">
+                                </ig:BoundDataField>
+                            </Columns>
+                            <Bands>
+                                <ig:Band Key="Vehicles" AutoGenerateColumns="false" DataMember="Vehicles" DataKeyFields="ID"
+                                    ExpandableAreaCssClass="FixPadding">
+                                    <Columns>
+                                        <ig:BoundDataField DataFieldName="Dpt" Key="Dpt" Footer-Text="Dpt" Header-Text="Dpt"
+                                            CssClass="CenterAlign" Width="30" Hidden="true">
+                                        </ig:BoundDataField>
+                                        <ig:BoundDataField DataFieldName="VehicleId" Key="VehicleId" Footer-Text="Vehicle"
+                                            Header-Text="Vehicle"
+                                            CssClass="CenterAlign" Width="60">
+                                        </ig:BoundDataField>
+                                        <ig:BoundDataField DataFieldName="HrsRun" Key="HrsRun" Footer-Text="HrsRun" Header-Text="HrsRun"
+                                            CssClass="RightAlign" DataFormatString="{0:F}" Width="60">
+                                        </ig:BoundDataField>
+                                        <ig:BoundDataField DataFieldName="HrsIdle" Key="HrsIdle" Footer-Text="HrsIdle" Header-Text="HrsIdle"
+                                            CssClass="RightAlign" DataFormatString="{0:F}" Width="60">
+                                        </ig:BoundDataField>
+                                        <ig:BoundDataField DataFieldName="HrsOff" Key="HrsOff" Footer-Text="HrsOff" Header-Text="HrsOff"
+                                            CssClass="RightAlign" DataFormatString="{0:F}" Width="60">
+                                        </ig:BoundDataField>
+                                        <ig:BoundDataField DataFieldName="DIHrs" Key="DIHrs" Footer-Text="DIHrs" Header-Text="DIHrs"
+                                            CssClass="RightAlign" DataFormatString="{0:F}" Width="60">
+                                        </ig:BoundDataField>
+                                        <ig:BoundDataField DataFieldName="Miles" Key="Miles" Footer-Text="Miles" Header-Text="Miles"
+                                            CssClass="RightAlign" DataFormatString="{0:F}" Width="60">
+                                        </ig:BoundDataField>
+                                        <ig:BoundDataField DataFieldName="AvgSpeed" Key="AvgSpeed" Footer-Text="AvgSpeed"
+                                            Header-Text="AvgSpeed" CssClass="RightAlign" DataFormatString="{0:F}"
+                                            Width="80" Hidden="True">
+                                        </ig:BoundDataField>
+                                        <ig:BoundDataField DataFieldName="MaxSpeed" Key="MaxSpeed" Footer-Text="MaxSpeed"
+                                            Header-Text="MaxSpeed" CssClass="RightAlign" DataFormatString="{0:F}"
+                                            Width="80">
+                                        </ig:BoundDataField>
+                                        <ig:BoundDataField DataFieldName="OnTime" Key="OnTime" Footer-Text="OnTime" Header-Text="OnTime"
+                                            CssClass="RightAlign" Width="80">
+                                        </ig:BoundDataField>
+                                        <ig:BoundDataField DataFieldName="OffTime" Key="OffTime" Footer-Text="OffTime" Header-Text="OffTime"
+                                            CssClass="RightAlign" Width="80">
+                                        </ig:BoundDataField>
+                                        <ig:BoundDataField DataFieldName="MILCodes" Key="MILCodes" Footer-Text="MILCodes"
+                                            Header-Text="MILCodes" CssClass="LeftAlign" Width="200">
+                                        </ig:BoundDataField>
+                                    </Columns>
+                                </ig:Band>
+                            </Bands>
+                        </ig:Band>
+                    </Bands>
+                </ig:WebHierarchicalDataGrid>
+                <asp:Label ID="Label1" runat="server"></asp:Label>
+            </td>
+        </tr>
+    </table>
+
 </asp:Content>

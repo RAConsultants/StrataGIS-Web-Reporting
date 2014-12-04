@@ -55,6 +55,7 @@ public partial class SD1: System.Web.UI.Page
         wdgTotal.Visible = false;
         hdgTotal.Visible = false;
         divCharts.Visible = false;
+        hdgDailyG.Visible = false;
 
         switch ( input )
         {
@@ -80,10 +81,11 @@ public partial class SD1: System.Web.UI.Page
                 hdgTotal.Visible = true;
                 divCharts.Visible = true;
                 break;
+            case "DailyG":
+                hdgDailyG.Visible = true;
+                break;
 
         }
-
-
     }
 
     protected void fillLists()
@@ -129,11 +131,7 @@ public partial class SD1: System.Web.UI.Page
         dataConn.Close();
     }
 
-    protected void btnSearchDaily_Click(object sender, EventArgs e)
-    {
 
-        buildDaily();
-    }
     protected void btnRun_Click(object sender, EventArgs e)
     {
         switch ( ddReportType.SelectedItem.Value )
@@ -143,6 +141,9 @@ public partial class SD1: System.Web.UI.Page
                 break;
             case "Total":
                 buildTotal();
+                break;
+            case "DailyG":
+                buildDailyG();
                 break;
             case "TotalG":
                 buildTotalG();
@@ -161,7 +162,17 @@ public partial class SD1: System.Web.UI.Page
         setGrids("Daily");
 
         dataConn.Open();
-        string sqlquery = "select Replace(Convert(date,Date),' 12:00:00 AM','') as Date, Department as Dpt, VehicleId as Vehicle, HoursRunning as HrsRun, HoursIdle as HrsIdle, HoursOff as HrsOff, DigitalInputHours as DIHrs, round(TotalMiles,2) as Miles, AvgSpeed, round(MaxSpeed,2) as MaxSpeed, OnTime as OnTime, OffTime as OffTime, MILCodes ";
+        string sqlquery = "select Replace(Convert(date,Date),' 12:00:00 AM','') as Date ";
+        sqlquery += " , Department as Dpt, VehicleId as Vehicle ";
+        sqlquery += " , HoursRunning as HrsRun ";
+        sqlquery += " , HoursIdle as HrsIdle ";
+        sqlquery += " , HoursOff as HrsOff ";
+        sqlquery += " , DigitalInputHours as DIHrs ";
+        sqlquery += " , round(TotalMiles,2) as Miles ";
+        sqlquery += " , AvgSpeed, round(MaxSpeed,2) as MaxSpeed ";
+        sqlquery += " , OnTime as OnTime ";
+        sqlquery += " , OffTime as OffTime ";
+        sqlquery += " , MILCodes ";
         string sqlFrom = "  from dbo.SD1_MART_DAILY_REPORT ";
         string sqlOrder = " order by DateYear, DateMonth, DateDay, VehicleId";
         string whereClause = " where ";
@@ -172,25 +183,6 @@ public partial class SD1: System.Web.UI.Page
             whereClause += "and " + vehicleWhere();
         }
 
-        //int vlcnt = 0;
-        //foreach ( ListItem i in cklVehicles.Items )
-        //{
-        //    if ( i.Selected == true )
-        //    {
-        //        if ( vlcnt == 0 )
-        //        {
-        //            whereClause += " and ";
-        //            whereClause += " VehicleId in ('" + i.Text;
-        //        }
-        //        else
-        //        {
-        //            whereClause += "','" + i.Text;
-        //        }
-        //        vlcnt += 1;
-        //    }
-        //}
-        //if ( vlcnt > 0 )
-        //    whereClause += "') ";
 
         sqlquery += " " + sqlFrom;
 
@@ -257,13 +249,15 @@ public partial class SD1: System.Web.UI.Page
 
     private void buildTotalG()
     {
+        setGrids("TotalG");
         string sqlquery = "";
         string whereClause = "";
         string sqlOrder = "";
-
-        setGrids("TotalG");
         DataSet dataSet = new DataSet();
         DataTable table;
+
+        #region Chart Tables
+
         DataTable deptMiles = new DataTable();
         deptMiles.Columns.Add("Dpt", typeof(String));
         deptMiles.Columns.Add("Department", typeof(decimal));
@@ -295,7 +289,9 @@ public partial class SD1: System.Web.UI.Page
         DataTable VMax = new DataTable();
         VMax.Columns.Add("VehicleId", typeof(String));
         VMax.Columns.Add("Vehicle", typeof(decimal));
+        #endregion
 
+        #region Grid Tables
         table = new DataTable("Dpts");
         dataSet.Tables.Add(table);
         table.Columns.Add("ID", typeof(String));
@@ -326,8 +322,9 @@ public partial class SD1: System.Web.UI.Page
         table.Columns.Add("MILCodes", typeof(String));
         table.PrimaryKey = new DataColumn[] { table.Columns["ID"] };
         dataSet.Relations.Add(dataSet.Tables["Dpts"].Columns["ID"], dataSet.Tables["Vehicles"].Columns["Dpt"]);
+        #endregion
 
-
+        #region Department
 
         dataConn.Open();
         sqlquery = " SELECT Department as Dpt ";
@@ -411,7 +408,9 @@ public partial class SD1: System.Web.UI.Page
         ucDeptMax.DataSource = deptMax;
         ucDeptMax.Data.SwapRowsAndColumns = true;
         ucDeptMax.DataBind();
+        #endregion
 
+        #region Vehicles
         dataConn.Open();
         sqlquery = " SELECT Department as Dpt ";
         sqlquery += " ,VehicleId as Vehicle ";
@@ -501,54 +500,253 @@ public partial class SD1: System.Web.UI.Page
         ucVMax.DataSource = VMax;
         ucVMax.Data.SwapRowsAndColumns = true;
         ucVMax.DataBind();
+        #endregion
 
         hdgTotal.DataSource = dataSet;
         hdgTotal.DataBind();
     }
 
 
-    protected void btnSearchWeekly_Click(object sender, EventArgs e)
+    private void buildDailyG()
     {
+        string sqlquery = "";
+        string whereClause = "";
+        string sqlOrder = "";
+        string sqlFrom = "";
 
-        buildWeekly();
+        setGrids("DailyG");
+        DataSet dataSet = new DataSet();
+        DataTable table;
 
-    }
+        #region Grid Tables
+        table = new DataTable("Dates");
+        dataSet.Tables.Add(table);
+        table.Columns.Add("ID", typeof(String));
+        table.Columns.Add("HrsRun", typeof(decimal));
+        table.Columns.Add("HrsIdle", typeof(decimal));
+        table.Columns.Add("HrsOff", typeof(decimal));
+        table.Columns.Add("DIHrs", typeof(decimal));
+        table.Columns.Add("Miles", typeof(decimal));
+        table.Columns.Add("AvgSpeed", typeof(decimal));
+        table.Columns.Add("MaxSpeed", typeof(decimal));
+        table.Columns.Add("OnTime", typeof(String));
+        table.Columns.Add("OffTime", typeof(String));
+        table.PrimaryKey = new DataColumn[] { table.Columns["ID"] };
 
-    private void buildWeekly()
-    {
+        table = new DataTable("Dpts");
+        dataSet.Tables.Add(table);
+        table.Columns.Add("Date", typeof(String));
+        table.Columns.Add("ID", typeof(String));
+        table.Columns.Add("Dpt", typeof(String));
+        table.Columns.Add("HrsRun", typeof(decimal));
+        table.Columns.Add("HrsIdle", typeof(decimal));
+        table.Columns.Add("HrsOff", typeof(decimal));
+        table.Columns.Add("DIHrs", typeof(decimal));
+        table.Columns.Add("Miles", typeof(decimal));
+        table.Columns.Add("AvgSpeed", typeof(decimal));
+        table.Columns.Add("MaxSpeed", typeof(decimal));
+        table.Columns.Add("OnTime", typeof(String));
+        table.Columns.Add("OffTime", typeof(String));
+        table.PrimaryKey = new DataColumn[] { table.Columns["ID"] };
 
-        setGrids("Weekly");
+        table = new DataTable("Vehicles");
+        dataSet.Tables.Add(table);
+        table.Columns.Add("Dpt", typeof(String));
+        table.Columns.Add("ID", typeof(String));
+        table.Columns.Add("VehicleId", typeof(String));
+        table.Columns.Add("HrsRun", typeof(decimal));
+        table.Columns.Add("HrsIdle", typeof(decimal));
+        table.Columns.Add("HrsOff", typeof(decimal));
+        table.Columns.Add("DIHrs", typeof(decimal));
+        table.Columns.Add("Miles", typeof(decimal));
+        table.Columns.Add("AvgSpeed", typeof(decimal));
+        table.Columns.Add("MaxSpeed", typeof(decimal));
+        table.Columns.Add("OnTime", typeof(String));
+        table.Columns.Add("OffTime", typeof(String));
+        table.Columns.Add("MILCodes", typeof(String));
+        table.PrimaryKey = new DataColumn[] { table.Columns["ID"] };
+        dataSet.Relations.Add(dataSet.Tables["Dates"].Columns["ID"], dataSet.Tables["Dpts"].Columns["Date"]);
+        dataSet.Relations.Add(dataSet.Tables["Dpts"].Columns["ID"], dataSet.Tables["Vehicles"].Columns["Dpt"]);
+        #endregion
 
-
+        #region Date
         dataConn.Open();
-        string sqlquery = "select  DateYear as Year, DateMonth as Month, DateWeek as Week, Department as Dpt, VehicleId as Vehicle, HoursRunning as HrsRun, HoursIdle as HrsIdle, HoursOff as HrsOff, DigitalInputHours as DIHrs, round(TotalMiles,2) as Miles, AvgSpeed, round(MaxSpeed,2) as MaxSpeed, OnTime as OnTime, ExitTime as ExitTime, EnterTime as EnterTime, OffTime as OffTime, MILCodes ";
-        string sqlFrom = " from  (SELECT a.DateYear, a.DateMonth, a.DateWeek, a.VehicleId, SUM(HoursRunning) AS HoursRunning, SUM(HoursIdle) AS HoursIdle, SUM(HoursOff) AS HoursOff,  ";
-        sqlFrom += " sum(ROUND(ISNULL(DigitalInputHours, 0), 2)) AS DigitalInputHours, SUM(TotalMiles) AS TotalMiles, round(SUM(TotalMiles) / SUM(HoursRunning), 2) AS AvgSpeed,  ";
-        sqlFrom += " max(b.MaxSpeed) AS MaxSpeed, Department, CONVERT(varchar, CONVERT(time, cast(avg(cast(CONVERT(datetime, OnTime) AS float)) AS datetime)), 100)  ";
-        sqlFrom += " AS OnTime, CONVERT(varchar, CONVERT(time, cast(avg(cast(CONVERT(datetime, ExitTime) AS float)) AS datetime)), 100) AS ExitTime, CONVERT(varchar,  ";
-        sqlFrom += " CONVERT(time, cast(avg(cast(CONVERT(datetime, EnterTime) AS float)) AS datetime)), 100) AS EnterTime, CONVERT(varchar, CONVERT(time,  ";
-        sqlFrom += " cast(avg(cast(CONVERT(datetime, OffTime) AS float)) AS datetime)), 100) AS OffTime, STUFF ";
-        sqlFrom += " ((SELECT N', ' + CAST(Replace(Replace(MILCodes, '#' + b.VehicleId + '#', ''), 'v', '') AS VarChar(150)) ";
-        sqlFrom += "  FROM   dbo.SD1_MART_DAILY_REPORT b ";
-        sqlFrom += " WHERE b.MILCodes <> '' AND b.MILCodes IS NOT NULL AND b.DateYear = a.DateYear AND b.DateMonth = a.DateMonth AND b.DateWeek = a.DateWeek AND  ";
-        sqlFrom += " a.VehicleId = b.VehicleId FOR XML PATH('')/*,TYPE*/ ), 1, 2, '') AS MILCodes ";
-        sqlFrom += " FROM  dbo.SD1_MART_DAILY_REPORT a, dbo.SD1_MART_DAILY_MAX_SPEED b ";
-        sqlFrom += " WHERE a.DateDay = b.DateDay AND a.DateMonth = b.DateMonth AND a.DateYear = b.DateYear AND a.VehicleId = b.VehicleId ";
-        sqlFrom += " and  a.Date >= Convert(date,'" + wdpStart.Date.ToString("yyyy-MM-dd") + "') and   a.Date <= Convert(date,'" + wdpEnd.Date.ToString("yyyy-MM-dd") + "') ";
-        sqlFrom += " GROUP BY a.DateYear, a.DateMonth, a.DateWeek, a.VehicleId, Department ) as zzz ";
-        string sqlOrder = " order by DateYear, DateMonth, DateWeek, VehicleId";
-        string whereClause = " where ";
-        //whereClause += "LocalDate >= Convert(date,'" + wdpStart.Date.ToString("yyyy-MM-dd") + "') and LocalDate <= Convert(date,'" + wdpEnd.Date.ToString("yyyy-MM-dd") + "') ";
-
-        sqlquery += " " + sqlFrom;
-
+        sqlquery = " SELECT Replace(Convert(date,LocalDate),' 12:00:00 AM','') as Date ";
+        sqlquery += " ,ROUND(SUM(HoursRunning), 2) AS HrsRun ";
+        sqlquery += "  ,ROUND(SUM(HoursIdle), 2) AS HrsIdle ";
+        sqlquery += "  ,ROUND(SUM(HoursOff), 2) AS HrsOff ";
+        sqlquery += "  ,ROUND(sum(ROUND(ISNULL(DigitalInputHours, 0), 2)), 2) AS DIHrs ";
+        sqlquery += "  ,ROUND(SUM(TotalMiles), 2) AS Miles ";
+        sqlquery += "  ,round(SUM(TotalMiles) / SUM(HoursRunning), 2) AS AvgSpeed ";
+        sqlquery += " ,ROUND(max(MaxSpeed), 2) AS MaxSpeed ";
+        sqlquery += " ,CONVERT(varchar, CONVERT(time, cast(avg(cast(CONVERT(datetime, OnTime) AS float)) AS datetime)), 100)   AS OnTime ";
+        sqlquery += " ,CONVERT(varchar, CONVERT(time, cast(avg(cast(CONVERT(datetime, OffTime) AS float)) AS datetime)), 100)   AS OffTime ";
+        sqlquery += " FROM [SD1].[dbo].[SD1_MART_DAILY_REPORT] a ";
+        whereClause = " where LocalDate>=  Convert(date,'" + wdpStart.Date.ToString("yyyy-MM-dd") + "') and   LocalDate <= Convert(date,'" + wdpEnd.Date.ToString("yyyy-MM-dd") + "') ";
+        sqlOrder = " group by LocalDate ";
+        sqlOrder += "  order by LocalDate ";
 
         if ( selectedVehicles().Count > 0 )
         {
-            whereClause += " " + vehicleWhere();
-            sqlquery += whereClause;
+            whereClause += " and " + vehicleWhere();
+        }
+        sqlquery += whereClause;
+        sqlquery += " " + sqlOrder;
+        SqlCommand command = new SqlCommand(sqlquery, dataConn);
+        DataSet ds = new DataSet();
+        SqlDataAdapter sda = new SqlDataAdapter(command);
+        sda.Fill(ds);
+
+        dataConn.Close();
+
+        foreach ( DataRow row in ds.Tables[0].Rows )
+        {
+            DataRow ddr = dataSet.Tables["Dates"].NewRow();
+            ddr[0] = row[0].ToString();
+            ddr[1] = Convert.ToDecimal(row[1]);
+            ddr[2] = Convert.ToDecimal(row[2]);
+            ddr[3] = Convert.ToDecimal(row[3]);
+            ddr[4] = Convert.ToDecimal(row[4]);
+            ddr[5] = Convert.ToDecimal(row[5]);
+            ddr[6] = Convert.ToDecimal(row[6]);
+            ddr[7] = Convert.ToDecimal(row[7]);
+            ddr[8] = row[8].ToString();
+            ddr[9] = row[9].ToString();
+            dataSet.Tables["Dates"].Rows.Add(ddr);
         }
 
+        #endregion
+
+        #region dept
+        dataConn.Open();
+        sqlquery = " SELECT Replace(Convert(date,LocalDate),' 12:00:00 AM','') as Date ";
+        sqlquery += " ,Department as Dpt ";
+        sqlquery += " ,ROUND(SUM(HoursRunning), 2) AS HrsRun ";
+        sqlquery += "  ,ROUND(SUM(HoursIdle), 2) AS HrsIdle ";
+        sqlquery += "  ,ROUND(SUM(HoursOff), 2) AS HrsOff ";
+        sqlquery += "  ,ROUND(sum(ROUND(ISNULL(DigitalInputHours, 0), 2)), 2) AS DIHrs ";
+        sqlquery += "  ,ROUND(SUM(TotalMiles), 2) AS Miles ";
+        sqlquery += "  ,round(SUM(TotalMiles) / SUM(HoursRunning), 2) AS AvgSpeed ";
+        sqlquery += " ,ROUND(max(MaxSpeed), 2) AS MaxSpeed ";
+        sqlquery += " ,CONVERT(varchar, CONVERT(time, cast(avg(cast(CONVERT(datetime, OnTime) AS float)) AS datetime)), 100)   AS OnTime ";
+        sqlquery += " ,CONVERT(varchar, CONVERT(time, cast(avg(cast(CONVERT(datetime, OffTime) AS float)) AS datetime)), 100)   AS OffTime ";
+        sqlquery += " FROM [SD1].[dbo].[SD1_MART_DAILY_REPORT] a ";
+        whereClause = " where LocalDate>=  Convert(date,'" + wdpStart.Date.ToString("yyyy-MM-dd") + "') and   LocalDate <= Convert(date,'" + wdpEnd.Date.ToString("yyyy-MM-dd") + "') ";
+        sqlOrder = " group by LocalDate, Department ";
+        sqlOrder += "  order by LocalDate, Department ";
+
+        if ( selectedVehicles().Count > 0 )
+        {
+            whereClause += " and " + vehicleWhere();
+        }
+        sqlquery += whereClause;
+        sqlquery += " " + sqlOrder;
+        command = new SqlCommand(sqlquery, dataConn);
+        ds = new DataSet();
+        sda = new SqlDataAdapter(command);
+        sda.Fill(ds);
+        dataConn.Close();
+
+        foreach ( DataRow row in ds.Tables[0].Rows )
+        {
+            DataRow ddr = dataSet.Tables["Dpts"].NewRow();
+            ddr[0] = row[0].ToString();
+            ddr[1] = row[0].ToString() + row[1].ToString();
+            ddr[2] = row[1].ToString();
+            ddr[3] = Convert.ToDecimal(row[2]);
+            ddr[4] = Convert.ToDecimal(row[3]);
+            ddr[5] = Convert.ToDecimal(row[4]);
+            ddr[6] = Convert.ToDecimal(row[5]);
+            ddr[7] = Convert.ToDecimal(row[6]);
+            ddr[8] = Convert.ToDecimal(row[7]);
+            ddr[9] = Convert.ToDecimal(row[8]);
+            ddr[10] = row[9].ToString();
+            ddr[11] = row[10].ToString();
+            dataSet.Tables["Dpts"].Rows.Add(ddr);
+
+        }
+
+        #endregion
+
+        #region vehicle
+        dataConn.Open();
+        sqlquery = "select Replace(Convert(date,LocalDate),' 12:00:00 AM','') as Date ";
+        sqlquery += " , Department as Dpt ";
+        sqlquery += " , VehicleId as Vehicle ";
+        sqlquery += " , HoursRunning as HrsRun ";
+        sqlquery += " , HoursIdle as HrsIdle ";
+        sqlquery += " , HoursOff as HrsOff ";
+        sqlquery += " , DigitalInputHours as DIHrs ";
+        sqlquery += " , round(TotalMiles,2) as Miles ";
+        sqlquery += " , AvgSpeed ";
+        sqlquery += " , round(MaxSpeed,2) as MaxSpeed ";
+        sqlquery += " , OnTime as OnTime ";
+        sqlquery += " , OffTime as OffTime ";
+        sqlquery += " , MILCodes ";
+        sqlFrom = "  from dbo.SD1_MART_DAILY_REPORT ";
+        sqlOrder = " order by LocalDate, VehicleId";
+        whereClause = " where ";
+        whereClause += "LocalDate >= Convert(date,'" + wdpStart.Date.ToString("yyyy-MM-dd") + "') and LocalDate <= Convert(date,'" + wdpEnd.Date.ToString("yyyy-MM-dd") + "') ";
+
+        if ( selectedVehicles().Count > 0 )
+        {
+            whereClause += "and " + vehicleWhere();
+        }
+
+
+        sqlquery += " " + sqlFrom;
+
+        sqlquery += whereClause;
+        sqlquery += " " + sqlOrder;
+        command = new SqlCommand(sqlquery, dataConn);
+        ds = new DataSet();
+        sda = new SqlDataAdapter(command);
+        sda.Fill(ds);
+
+        dataConn.Close();
+
+        foreach ( DataRow row in ds.Tables[0].Rows )
+        {
+            DataRow ddr = dataSet.Tables["Vehicles"].NewRow();
+            ddr[0] = row[0].ToString() + row[1].ToString();
+            ddr[1] = row[0].ToString() + row[1].ToString() + row[2].ToString();
+            ddr[2] = row[2].ToString();
+            ddr[3] = Convert.ToDecimal(row[3]);
+            ddr[4] = Convert.ToDecimal(row[4]);
+            ddr[5] = Convert.ToDecimal(row[5]);
+            ddr[6] = Convert.ToDecimal(row[6]);
+            ddr[7] = Convert.ToDecimal(row[7]);
+            ddr[8] = Convert.ToDecimal(row[8]);
+            ddr[9] = Convert.ToDecimal(row[9]);
+            ddr[10] = row[10].ToString();
+            ddr[11] = row[11].ToString();
+            ddr[12] = row[12].ToString();
+            dataSet.Tables["Vehicles"].Rows.Add(ddr);
+        }
+
+        #endregion
+
+        hdgDailyG.DataSource = dataSet;
+        hdgDailyG.DataBind();
+    }
+
+    private void buildTrip()
+    {
+
+        setGrids("Trip");
+
+        dataConn.Open();
+        string sqlquery = "select Replace(Convert(date,LocalDate),' 12:00:00 AM','') as Date, Department as Dpt, VehicleId as Vehicle, StartLocalTime, StopLocalTime, TripDuration, IdleTime, TripMiles, StopLength, STX, STY ";
+        string sqlFrom = "  from dbo.Stratagis_Report_Trip_Mart ";
+        string sqlOrder = " order by VehicleId, LocalDate, StartObjectId";
+        string whereClause = " where ";
+        whereClause += "LocalDate >= Convert(date,'" + wdpStart.Date.ToString("yyyy-MM-dd") + "') and LocalDate <= Convert(date,'" + wdpEnd.Date.ToString("yyyy-MM-dd") + "') ";
+
+        if ( selectedVehicles().Count > 0 )
+        {
+            whereClause += " and " + vehicleWhere();
+            // sqlquery += whereClause;
+        }
 
         //int vlcnt = 0;
         //foreach ( ListItem i in cklVehicles.Items )
@@ -557,8 +755,7 @@ public partial class SD1: System.Web.UI.Page
         //    {
         //        if ( vlcnt == 0 )
         //        {
-
-        //            //whereClause += " and ";
+        //            whereClause += " and ";
         //            whereClause += " VehicleId in ('" + i.Text;
         //        }
         //        else
@@ -568,94 +765,12 @@ public partial class SD1: System.Web.UI.Page
         //        vlcnt += 1;
         //    }
         //}
-
-
         //if ( vlcnt > 0 )
-        //{
         //    whereClause += "') ";
-        //    sqlquery += whereClause;
-        //}
-
-        //sqlquery += whereClause;
-        sqlquery += " " + sqlOrder;
-        SqlCommand command = new SqlCommand(sqlquery, dataConn);
-        DataSet ds = new DataSet();
-        SqlDataAdapter sda = new SqlDataAdapter(command);
-        sda.Fill(ds);
-
-        dataConn.Close();
-
-        wdgWeekly.DataSource = ds;
-        wdgWeekly.DataBind();
-    }
-
-    protected void btnSearchMonthly_Click(object sender, EventArgs e)
-    {
-
-        buildMonthly();
-
-    }
-
-    private void buildMonthly()
-    {
-
-        setGrids("Monthly");
-
-
-        dataConn.Open();
-        string sqlquery = "select DateYear as Year,  DateMonth as Month, Department as Dpt, VehicleId as Vehicle, HoursRunning as HrsRun, HoursIdle as HrsIdle, HoursOff as HrsOff, DigitalInputHours as DIHrs, round(TotalMiles,2) as Miles, AvgSpeed, round(MaxSpeed,2) as MaxSpeed, OnTime as OnTime, ExitTime as ExitTime, EnterTime as EnterTime, OffTime as OffTime, MILCodes ";
-        string sqlFrom = "  from (SELECT a.DateYear, a.DateMonth, a.VehicleId, SUM(HoursRunning) AS HoursRunning, SUM(HoursIdle) AS HoursIdle, SUM(HoursOff) AS HoursOff, Sum(DigitalInputHours)  ";
-        sqlFrom += " AS DigitalInputHours, SUM(TotalMiles) AS TotalMiles, round(SUM(TotalMiles) / SUM(HoursRunning), 2) AS AvgSpeed, max(b.MaxSpeed) AS MaxSpeed, Department,  ";
-        sqlFrom += " CONVERT(varchar, CONVERT(time, cast(avg(cast(CONVERT(datetime, OnTime) AS float)) AS datetime)), 100) AS OnTime, CONVERT(varchar, CONVERT(time,  ";
-        sqlFrom += " cast(avg(cast(CONVERT(datetime, ExitTime) AS float)) AS datetime)), 100) AS ExitTime, CONVERT(varchar, CONVERT(time, cast(avg(cast(CONVERT(datetime,  ";
-        sqlFrom += " EnterTime) AS float)) AS datetime)), 100) AS EnterTime, CONVERT(varchar, CONVERT(time, cast(avg(cast(CONVERT(datetime, OffTime) AS float)) AS datetime)),  ";
-        sqlFrom += " 100) AS OffTime, STUFF ";
-        sqlFrom += " ((SELECT N', ' + CAST(Replace(Replace(MILCodes, '#' + b.VehicleId + '#', ''), 'v', '') AS VarChar(150)) ";
-        sqlFrom += "  FROM   dbo.SD1_MART_DAILY_REPORT b ";
-        sqlFrom += " WHERE b.MILCodes <> '' AND b.MILCodes IS NOT NULL AND b.DateYear = a.DateYear AND b.DateMonth = a.DateMonth AND a.VehicleId = b.VehicleId FOR  ";
-        sqlFrom += "   XML PATH('')/*,TYPE*/ ), 1, 2, '') AS MILCodes ";
-        sqlFrom += " FROM  dbo.SD1_MART_DAILY_REPORT a, dbo.SD1_MART_DAILY_MAX_SPEED b ";
-        sqlFrom += " WHERE a.DateDay = b.DateDay AND a.DateMonth = b.DateMonth AND a.DateYear = b.DateYear AND a.VehicleId = b.VehicleId ";
-        sqlFrom += " and  a.Date >= Convert(date,'" + wdpStart.Date.ToString("yyyy-MM-dd") + "') and   a.Date <= Convert(date,'" + wdpEnd.Date.ToString("yyyy-MM-dd") + "')  ";
-        sqlFrom += " GROUP BY a.DateYear, a.DateMonth, a.VehicleId, Department ) as zzz ";
-        string sqlOrder = " order by DateYear, DateMonth, VehicleId";
-        string whereClause = " where ";
-        //whereClause += "LocalDate >= Convert(date,'" + wdpStart.Date.ToString("yyyy-MM-dd") + "') and LocalDate <= Convert(date,'" + wdpEnd.Date.ToString("yyyy-MM-dd") + "') ";
-
 
         sqlquery += " " + sqlFrom;
 
-        if ( selectedVehicles().Count > 0 )
-        {
-            whereClause += " " + vehicleWhere();
-            sqlquery += whereClause;
-        }
-
-        //int vlcnt = 0;
-        //foreach ( ListItem i in cklVehicles.Items )
-        //{
-        //    if ( i.Selected == true )
-        //    {
-        //        if ( vlcnt == 0 )
-        //        {
-        //            //whereClause += " and ";
-        //            whereClause += " VehicleId in ('" + i.Text;
-        //        }
-        //        else
-        //        {
-        //            whereClause += "','" + i.Text;
-        //        }
-        //        vlcnt += 1;
-        //    }
-        //}
-
-
-        //if ( vlcnt > 0 )
-        //{
-
-        //    whereClause += "') ";
-        //    sqlquery += whereClause;
-        //}
+        sqlquery += whereClause;
         sqlquery += " " + sqlOrder;
         SqlCommand command = new SqlCommand(sqlquery, dataConn);
         DataSet ds = new DataSet();
@@ -663,13 +778,10 @@ public partial class SD1: System.Web.UI.Page
         sda.Fill(ds);
 
         dataConn.Close();
-        wdgMonthly.DataSource = ds;
-        wdgMonthly.DataBind();
-    }
 
-    protected void btnSearchEnterExit_Click(object sender, EventArgs e)
-    {
-        buildEnterExit();
+
+        wdgTrip.DataSource = ds;
+        wdgTrip.DataBind();
     }
 
     protected void buildEnterExit()
@@ -1002,66 +1114,27 @@ public partial class SD1: System.Web.UI.Page
         return dataSet;
     }
 
+    protected void btnSearchDaily_Click(object sender, EventArgs e)
+    {
+
+        buildDaily();
+    }
+
+
+    protected void btnSearchEnterExit_Click(object sender, EventArgs e)
+    {
+        buildEnterExit();
+    }
+
     protected void btnTrip_Click(object sender, EventArgs e)
     {
         buildTrip();
 
     }
 
-    private void buildTrip()
-    {
-
-        setGrids("Trip");
-
-        dataConn.Open();
-        string sqlquery = "select Replace(Convert(date,LocalDate),' 12:00:00 AM','') as Date, Department as Dpt, VehicleId as Vehicle, StartLocalTime, StopLocalTime, TripDuration, IdleTime, TripMiles, StopLength, STX, STY ";
-        string sqlFrom = "  from dbo.Stratagis_Report_Trip_Mart ";
-        string sqlOrder = " order by VehicleId, LocalDate, StartObjectId";
-        string whereClause = " where ";
-        whereClause += "LocalDate >= Convert(date,'" + wdpStart.Date.ToString("yyyy-MM-dd") + "') and LocalDate <= Convert(date,'" + wdpEnd.Date.ToString("yyyy-MM-dd") + "') ";
-
-        if ( selectedVehicles().Count > 0 )
-        {
-            whereClause += " " + vehicleWhere();
-            // sqlquery += whereClause;
-        }
-
-        //int vlcnt = 0;
-        //foreach ( ListItem i in cklVehicles.Items )
-        //{
-        //    if ( i.Selected == true )
-        //    {
-        //        if ( vlcnt == 0 )
-        //        {
-        //            whereClause += " and ";
-        //            whereClause += " VehicleId in ('" + i.Text;
-        //        }
-        //        else
-        //        {
-        //            whereClause += "','" + i.Text;
-        //        }
-        //        vlcnt += 1;
-        //    }
-        //}
-        //if ( vlcnt > 0 )
-        //    whereClause += "') ";
-
-        sqlquery += " " + sqlFrom;
-
-        sqlquery += whereClause;
-        sqlquery += " " + sqlOrder;
-        SqlCommand command = new SqlCommand(sqlquery, dataConn);
-        DataSet ds = new DataSet();
-        SqlDataAdapter sda = new SqlDataAdapter(command);
-        sda.Fill(ds);
-
-        dataConn.Close();
 
 
-        wdgTrip.DataSource = ds;
-        wdgTrip.DataBind();
-    }
-
+    #region Coordinate Lookup and Reverse Geo-Coding
     public double fttom = 0.30480060960121920243840487680975;
     public double RAD = 180.0 / Math.PI;
 
@@ -1306,6 +1379,10 @@ public partial class SD1: System.Web.UI.Page
         e.Row.Items[9].Value = spc(stx, sty);
     }
 
+    #endregion
+
+    #region Department and Vehicle Code
+
     protected void lbDept_SelectedIndexChanged(object sender, EventArgs e)
     {
         if ( lbDept.SelectedItem.Text == "All" )
@@ -1407,5 +1484,6 @@ public partial class SD1: System.Web.UI.Page
         string where = " Department in (\'" + lbDept.SelectedItem.Text + "\') ";
         return where;
     }
+    #endregion
 
 }
